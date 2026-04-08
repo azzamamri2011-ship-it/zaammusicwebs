@@ -110,20 +110,36 @@
         `).join('');
     }
 
-    function playTrack(index) {
-        if (index < 0 || index >= currentList.length) return;
-        currentIndex = index;
-        const track = currentList[currentIndex];
+    async function playTrack(index) {
+    if (index < 0 || index >= currentList.length) return;
+    currentIndex = index;
+    const track = currentList[currentIndex];
+    
+    document.getElementById('pTitle').innerText = track.title;
+    document.getElementById('pArtist').innerText = track.artist;
+    document.getElementById('pCover').src = track.cover;
+    
+    try {
+        // 1. Ambil URL stream dari backend
+        const res = await fetch(`/api/stream?id=${track.id}`);
+        const data = await res.json();
         
-        document.getElementById('pTitle').innerText = track.title;
-        document.getElementById('pArtist').innerText = track.artist;
-        document.getElementById('pCover').src = track.cover;
-        
-        audio.src = `/api/stream?id=${track.id}`;
-        audio.play();
-        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-        renderGrid();
+        if (data.url) {
+            // 2. Masukkan URL langsung ke audio player
+            audio.src = data.url;
+            audio.play();
+            playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        } else {
+            alert("Gagal mengambil sumber suara.");
+        }
+    } catch (err) {
+        console.error("Error playing track:", err);
+        alert("Terjadi kesalahan saat memutar lagu.");
     }
+    
+    renderGrid();
+}
+
 
     function togglePlay() {
         if (currentIndex === -1) return;
