@@ -27,13 +27,19 @@ app.get('/api/search', async (req, res) => {
 app.get('/api/stream', async (req, res) => {
     try {
         const videoId = req.query.id;
-        const info = await ytdl.getInfo(`https://www.youtube.com/watch?v=${videoId}`, { requestOptions: { headers } });
-        const format = ytdl.chooseFormat(info.formats, { filter: 'audioonly', quality: 'highestaudio' });
-        res.setHeader('Content-Type', 'audio/mpeg');
-        ytdl.downloadFromInfo(info, { format, highWaterMark: 1 << 25 }).pipe(res);
+        const info = await ytdl.getInfo(`https://www.youtube.com/watch?v=${videoId}`, { 
+            requestOptions: { headers } 
+        });
+        
+        const format = ytdl.chooseFormat(info.formats, { 
+            filter: 'audioonly', 
+            quality: 'highestaudio' 
+        });
+
+        // Alih-alih .pipe(res), kita kirim URL-nya saja
+        res.json({ url: format.url });
     } catch (e) {
-        res.status(500).send(e.message);
+        res.status(500).json({ error: e.message });
     }
 });
 
-module.exports = app;
